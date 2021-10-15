@@ -1,4 +1,15 @@
+Content-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
+
+--//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="config.yaml"
+
 #cloud-config
+cloud_final_modules:
+  - [scripts-user, always]
 
 users:
   - name: luciano
@@ -7,3 +18,24 @@ users:
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
     groups: sudo
     shell: /bin/bash
+
+# package_update: true
+# package_upgrade: true
+# package_reboot_if_required: true
+
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="script.sh"
+
+#!/bin/bash
+
+cd /tmp
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${es_version}-linux-x86_64.tar.gz
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${es_version}-linux-x86_64.tar.gz.sha512
+shasum -a 512 -c elasticsearch-${es_version}-linux-x86_64.tar.gz.sha512
+cd /opt
+tar -xzf /tmp/elasticsearch-${es_version}-linux-x86_64.tar.gz
+
+--//
