@@ -15,7 +15,7 @@ variable master_nodes_disk {
 
 variable master_nodes_mem {
   type        = number
-  default     = 512
+  default     = 1024
 }
 
 variable status {

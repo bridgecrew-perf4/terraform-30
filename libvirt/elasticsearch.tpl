@@ -2,7 +2,10 @@ cluster.name: ${cluster_name}
 cluster.initial_master_nodes: ${cluster_initial_master_nodes}
   
 bootstrap.memory_lock: ${bootstrap_memory_lock}
-discovery.seed_hosts: ${discovery_seed_hosts}
+discovery.seed_hosts:
+%{ for seed in discovery_seed_hosts ~}
+  - ${seed}
+%{ endfor ~}
 
 # http.compression: true
 # http.compression_level: 3

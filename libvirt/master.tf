@@ -58,32 +58,76 @@ resource "libvirt_domain" "master_nodes_domain" {
 
 }
 
-resource "null_resource" "copy-config" {
+resource "time_sleep" "wait_30_seconds" {
+  depends_on = [libvirt_domain.master_nodes_domain]
+
+  create_duration = "15s"
+}
+
+resource "null_resource" "copy-elasticsearch" {
     count     = var.master_nodes
+    depends_on = [time_sleep.wait_30_seconds]
 
     connection {
         type     = "ssh"
         host     = libvirt_domain.master_nodes_domain[count.index].network_interface[0].addresses[0]
-        user     = "luciano"
+        user     = "elastic"
         agent    =  false
         private_key = file("~/.ssh/id_rsa")
     }
     
 
     provisioner "file" {
-        content      = templatefile("${path.module}/elasticsearch.yml",
+        content      = templatefile("${path.module}/elasticsearch.tpl",
                         {
                         cluster_name = "cluster",
                         cluster_initial_master_nodes = "${var.stack}-master-node-0",
                         bootstrap_memory_lock = false,
-                        # Need a list
-                        discovery_seed_hosts = libvirt_domain.master_nodes_domain[0].network_interface[0].addresses[0],
+                        discovery_seed_hosts = libvirt_domain.master_nodes_domain[*].network_interface[0].addresses[0],
                         node_data = false,
                         node_master = true,
                         hostname = "${var.stack}-master-node-${count.index}"
                         })
-        # Create a new folder with the with perms                        
-        destination = "~/elasticsearch.yml"
+        destination = "/etc/elasticsearch/elasticsearch.yml"
     }
+}
 
+resource "null_resource" "copy-jvm-options" {
+    count     = var.master_nodes
+    depends_on = [time_sleep.wait_30_seconds]
+
+    connection {
+        type     = "ssh"
+        host     = libvirt_domain.master_nodes_domain[count.index].network_interface[0].addresses[0]
+        user     = "elastic"
+        agent    =  false
+        private_key = file("~/.ssh/id_rsa")
+    }
+    
+
+    provisioner "file" {
+
+        source = "${path.module}/jvm.options"
+        destination = "/etc/elasticsearch/jvm.options"
+    }
+}
+
+resource "null_resource" "copy-log4j2-properties" {
+    count     = var.master_nodes
+    depends_on = [time_sleep.wait_30_seconds]
+
+    connection {
+        type     = "ssh"
+        host     = libvirt_domain.master_nodes_domain[count.index].network_interface[0].addresses[0]
+        user     = "elastic"
+        agent    =  false
+        private_key = file("~/.ssh/id_rsa")
+    }
+    
+
+    provisioner "file" {
+
+        source = "${path.module}/log4j2.properties"
+        destination = "/etc/elasticsearch/log4j2.properties"
+    }
 }

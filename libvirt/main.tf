@@ -4,6 +4,10 @@ terraform {
       source = "dmacvicar/libvirt"
       version = "0.6.11"
     }
+    time = {
+      source = "hashicorp/time"
+      version = "0.7.2"
+    }
     # cloudinit = {
     #   source = "hashicorp/cloudinit"
     #   version = "2.2.0"

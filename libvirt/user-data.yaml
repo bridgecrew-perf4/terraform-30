@@ -12,12 +12,13 @@ cloud_final_modules:
   - [scripts-user, always]
 
 users:
-  - name: luciano
+  - name: elastic
     ssh_authorized_keys:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBrfzsE8X9pEqYFfBlcnLzNL/dWv+cOekcazfu6O1AXfDnGPN9nzfnkgcZ0XPR8g++9LaX6duPZqARAjl34BFJEAjAQzPbx8hV0EBEXBcgmRpsqxpjgwyJhMPAaG6HvZ/cvkeLngFr2cG5Esx2lgjrg66BMcjvLspoQGuA6JhaOKa3ti6CIS+PhHjFqRspmw6EDBsx2mG1E1NXGgNbO6960/JXCv1xkryspfN+mdQZpseBpIaGDuDO6ThmSx6AWHZci/mlqo5xiJOAyKwR18uYEdvem3X1mnBBjnky2Mnhp1RBzsnlKULdRH1elQ/bB2nvVRXoUo8SIzuQ4txHJtPr
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
     groups: sudo
     shell: /bin/bash
+    homedir: /opt/elasticsearch-${es_version}
 
 # package_update: true
 # package_upgrade: true
@@ -31,11 +32,19 @@ Content-Disposition: attachment; filename="script.sh"
 
 #!/bin/bash
 
+mkdir /etc/elasticsearch
+chown elastic.elastic /etc/elasticsearch
+
+
+
 cd /tmp
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${es_version}-linux-x86_64.tar.gz
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${es_version}-linux-x86_64.tar.gz.sha512
 shasum -a 512 -c elasticsearch-${es_version}-linux-x86_64.tar.gz.sha512
 cd /opt
 tar -xzf /tmp/elasticsearch-${es_version}-linux-x86_64.tar.gz
+chown elastic.elastic -R elasticsearch-${es_version}
+rm /tmp/elasticsearch-${es_version}-linux-x86_64.tar.gz
+rm elasticsearch-${es_version}-linux-x86_64.tar.gz.sha512
 
 --//
