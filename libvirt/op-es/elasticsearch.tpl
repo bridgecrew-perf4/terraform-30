@@ -12,6 +12,7 @@ discovery.seed_hosts:
 
 node.data: ${node_data}
 node.master: ${node_master}
+node.ingest: ${node_ingest}
 node.name: ${hostname}
 network.host: 0.0.0.0
 

@@ -58,7 +58,7 @@ resource "libvirt_domain" "master_nodes_domain" {
 
 }
 
-resource "time_sleep" "wait_30_seconds" {
+resource "time_sleep" "wait_15_seconds" {
   depends_on = [libvirt_domain.master_nodes_domain]
 
   create_duration = "15s"
@@ -66,7 +66,7 @@ resource "time_sleep" "wait_30_seconds" {
 
 resource "null_resource" "copy-elasticsearch" {
     count     = var.master_nodes
-    depends_on = [time_sleep.wait_30_seconds]
+    depends_on = [time_sleep.wait_15_seconds]
 
     connection {
         type     = "ssh"
@@ -86,6 +86,7 @@ resource "null_resource" "copy-elasticsearch" {
                         discovery_seed_hosts = libvirt_domain.master_nodes_domain[*].network_interface[0].addresses[0],
                         node_data = false,
                         node_master = true,
+                        node_ingest = false,
                         hostname = "${var.stack}-master-node-${count.index}"
                         })
         destination = "/etc/elasticsearch/elasticsearch.yml"
@@ -94,7 +95,7 @@ resource "null_resource" "copy-elasticsearch" {
 
 resource "null_resource" "copy-jvm-options" {
     count     = var.master_nodes
-    depends_on = [time_sleep.wait_30_seconds]
+    depends_on = [time_sleep.wait_15_seconds]
 
     connection {
         type     = "ssh"
@@ -107,14 +108,18 @@ resource "null_resource" "copy-jvm-options" {
 
     provisioner "file" {
 
-        source = "${path.module}/jvm.options"
+        content      = templatefile("${path.module}/jvm.options",
+                        {
+                        heap_mem = var.master_heap_mem
+                        })        
+
         destination = "/etc/elasticsearch/jvm.options"
     }
 }
 
 resource "null_resource" "copy-log4j2-properties" {
     count     = var.master_nodes
-    depends_on = [time_sleep.wait_30_seconds]
+    depends_on = [time_sleep.wait_15_seconds]
 
     connection {
         type     = "ssh"
@@ -130,4 +135,8 @@ resource "null_resource" "copy-log4j2-properties" {
         source = "${path.module}/log4j2.properties"
         destination = "/etc/elasticsearch/log4j2.properties"
     }
+}
+
+output "master_nodes_domains" {
+    value       = libvirt_domain.master_nodes_domain[*].network_interface[0].addresses[0]
 }
