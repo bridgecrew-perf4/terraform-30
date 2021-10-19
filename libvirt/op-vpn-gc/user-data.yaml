@@ -1,0 +1,37 @@
+Content-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
+
+--//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="config.yaml"
+
+#cloud-config
+
+## Enable this if you want Scrip.sh run in every boot
+# cloud_final_modules:
+#   - [scripts-user, always]
+##
+
+users:
+  - name: luciano
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBrfzsE8X9pEqYFfBlcnLzNL/dWv+cOekcazfu6O1AXfDnGPN9nzfnkgcZ0XPR8g++9LaX6duPZqARAjl34BFJEAjAQzPbx8hV0EBEXBcgmRpsqxpjgwyJhMPAaG6HvZ/cvkeLngFr2cG5Esx2lgjrg66BMcjvLspoQGuA6JhaOKa3ti6CIS+PhHjFqRspmw6EDBsx2mG1E1NXGgNbO6960/JXCv1xkryspfN+mdQZpseBpIaGDuDO6ThmSx6AWHZci/mlqo5xiJOAyKwR18uYEdvem3X1mnBBjnky2Mnhp1RBzsnlKULdRH1elQ/bB2nvVRXoUo8SIzuQ4txHJtPr
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    shell: /bin/bash
+
+# package_update: true
+# package_upgrade: true
+# package_reboot_if_required: true
+
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="script.sh"
+
+#!/bin/bash
+
+--//
