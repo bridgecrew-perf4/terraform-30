@@ -1,0 +1,130 @@
+Content-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
+
+--//
+Content-Type: text/cloud-config; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="config.yaml"
+
+#cloud-config
+
+## Enable this if you want Scrip.sh run in every boot
+# cloud_final_modules:
+#   - [scripts-user, always]
+##
+
+users:
+  - name: elastic
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBrfzsE8X9pEqYFfBlcnLzNL/dWv+cOekcazfu6O1AXfDnGPN9nzfnkgcZ0XPR8g++9LaX6duPZqARAjl34BFJEAjAQzPbx8hV0EBEXBcgmRpsqxpjgwyJhMPAaG6HvZ/cvkeLngFr2cG5Esx2lgjrg66BMcjvLspoQGuA6JhaOKa3ti6CIS+PhHjFqRspmw6EDBsx2mG1E1NXGgNbO6960/JXCv1xkryspfN+mdQZpseBpIaGDuDO6ThmSx6AWHZci/mlqo5xiJOAyKwR18uYEdvem3X1mnBBjnky2Mnhp1RBzsnlKULdRH1elQ/bB2nvVRXoUo8SIzuQ4txHJtPr
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    shell: /bin/bash
+    homedir: /opt/elasticsearch-7.15.1
+
+write_files:
+- content: |
+    [Unit]
+    Description=Elasticsearch
+    Documentation=https://www.elastic.co
+    Wants=network-online.target
+    After=network-online.target
+
+    [Service]
+    Type=simple
+    PrivateTmp=true
+    Environment=ES_HOME=/opt/elasticsearch-7.15.1
+    Environment=ES_PATH_CONF=/etc/elasticsearch
+    Environment=PID_DIR=/opt/elasticsearch-7.15.1/pid
+    Environment=ES_TMPDIR=/opt/elasticsearch-7.15.1/tmp
+    Environment=ES_SD_NOTIFY=false
+
+    User=elastic
+    Group=elastic
+
+    ExecStart=/opt/elasticsearch-7.15.1/bin/elasticsearch -p $${PID_DIR}/elasticsearch.pid --quiet
+
+    # StandardOutput is configured to redirect to journalctl since
+    # some error messages may be logged in standard output before
+    # elasticsearch logging system is initialized. Elasticsearch
+    # stores its logs in /var/log/elasticsearch and does not use
+    # journalctl by default. If you also want to enable journalctl
+    # logging, you can simply remove the "quiet" option from ExecStart.
+    StandardOutput=journal
+    StandardError=inherit
+
+    # Specifies the maximum file descriptor number that can be opened by this process
+    LimitNOFILE=65535
+
+    # Specifies the maximum number of processes
+    LimitNPROC=4096
+
+    # Specifies the maximum size of virtual memory
+    LimitAS=infinity
+
+    # Specifies the maximum file size
+    LimitFSIZE=infinity
+
+    # Disable timeout logic and wait until process is stopped
+    TimeoutStopSec=0
+
+    # SIGTERM signal is used to stop the Java process
+    KillSignal=SIGTERM
+
+    # Send the signal only to the JVM rather than its control group
+    KillMode=process
+
+    # Java process is never killed
+    SendSIGKILL=no
+
+    # When a JVM receives a SIGTERM signal it exits with code 143
+    SuccessExitStatus=143
+
+    # Allow a slow startup before the systemd notifier module kicks in to extend the timeout
+    TimeoutStartSec=75
+
+    [Install]
+    WantedBy=multi-user.target
+
+  path: /etc/systemd/system/elastic.service
+  permissions: '0644'  
+  owner: root:root
+- content: |
+    vm.max_map_count=262144
+
+  path: /etc/sysctl.d/elasticsearch.conf
+  permissions: '0644'  
+  owner: root:root
+
+runcmd:
+  - [ mkdir, /etc/elasticsearch]
+  - [ chown, elastic.elastic, /etc/elasticsearch]
+  - [ sysctl, -p, /etc/sysctl.d/elasticsearch.conf]  
+
+
+# package_update: true
+# package_upgrade: true
+# package_reboot_if_required: true
+
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="script.sh"
+
+#!/bin/bash
+
+cd /tmp
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.15.1-linux-x86_64.tar.gz
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.15.1-linux-x86_64.tar.gz.sha512
+shasum -a 512 -c elasticsearch-7.15.1-linux-x86_64.tar.gz.sha512
+cd /opt
+tar -xzf /tmp/elasticsearch-7.15.1-linux-x86_64.tar.gz
+mkdir elasticsearch-7.15.1/pid elasticsearch-7.15.1/tmp
+chown elastic.elastic -R elasticsearch-7.15.1
+rm /tmp/elasticsearch-7.15.1-linux-x86_64.tar.gz
+rm /tmp/elasticsearch-7.15.1-linux-x86_64.tar.gz.sha512
+systemctl enable elastic.service
+
+--//
