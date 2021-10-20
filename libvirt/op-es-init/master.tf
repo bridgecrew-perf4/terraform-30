@@ -13,7 +13,7 @@ resource "libvirt_cloudinit_disk" "master_nodes_init" {
 resource "libvirt_volume" "master_nodes_volume" {
     count          = var.master_nodes
 
-    name           = "${var.stack}-${count.index}.qcow2"
+    name           = "${var.stack}-master-node-${count.index}.qcow2"
     pool           = "default"
     size           = var.master_nodes_disk
     base_volume_id = libvirt_volume.base-cloud.id
