@@ -49,32 +49,10 @@ variable data_nodes_disk {
 
 variable data_nodes_mem {
   type        = number
-  default     = 2048
+  default     = 4096
 }
 
 variable data_heap_mem {
   type        = string
-  default     = "1024m"
-}
-
-## Ingest Nodes
-
-variable ingest_nodes {
-  type        = number
-  default     = 2
-}
-
-variable ingest_nodes_disk {
-  type        = number
-  default     = 10 * 1024 * 1024 * 1024
-}
-
-variable ingest_nodes_mem {
-  type        = number
-  default     = 2048
-}
-
-variable ingest_heap_mem {
-  type        = string
-  default     = "512m"
+  default     = "2048m"
 }

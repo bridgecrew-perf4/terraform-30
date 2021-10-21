@@ -31,6 +31,8 @@ resource "libvirt_domain" "master_nodes_domain" {
 
     network_interface {
         network_name = "default"
+        # Refactor mac generator
+        mac            = "52:54:00:AA:00:A${count.index}"
         wait_for_lease = true
     }  
     
