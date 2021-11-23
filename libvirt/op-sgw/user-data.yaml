@@ -7,13 +7,6 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment; filename="config.yaml"
 
-#cloud-config
-
-## Enable this if you want Scrip.sh run in every boot
-# cloud_final_modules:
-#   - [scripts-user, always]
-##
-
 users:
   - name: luciano
     ssh_authorized_keys:
@@ -26,14 +19,24 @@ package_update: true
 package_upgrade: true
 package_reboot_if_required: true
 
---//
-Content-Type: text/x-shellscript; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="script.sh"
+write_files:
+- content: |
+    opster_sgw_logger_url:
+      protocol: "http"
+      host: "{{ docker_network_gw }}"
+      port: 9201
+    opster_sgw_backends:
+      - url: 'http://es-1-onion.giacchetta.net:9200'
+        default: 'true'
 
-#!/bin/bash
+  path: /etc/ansible/values.yaml
+  permissions: '0644'  
+  owner: root:root
 
-# apt install -y spice-vdagent ubuntu-desktop-minimal
 
---//
+packages:
+ - python3-pip
+
+runcmd:
+  - [ pip3, install, ansible-core==2.11.*]
+  - [ ansible-pull, -e @/etc/ansible/values.yaml, -U https://github.com/giacchetta/ansible.git, sgw-pull/stack.yaml]
