@@ -32,5 +32,5 @@ variable sandbox_nodes_mem {
 
 variable sandbox_nodes_vcpu {
   type        = number
-  default     = 2
+  default     = 4
 }

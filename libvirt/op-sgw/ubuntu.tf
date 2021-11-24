@@ -1,5 +1,6 @@
 locals {
-  sandbox_user_data = templatefile("${path.module}/user-data.yaml",{})
+#   sandbox_user_data = templatefile("${path.module}/user-data.yaml",{})
+    sandbox_user_data = templatefile("~/opster/installer/user-data.yaml",{})
 }
 
 resource "libvirt_cloudinit_disk" "sandbox_nodes_init" {
@@ -31,6 +32,10 @@ resource "libvirt_domain" "sandbox_nodes_domain" {
     memory    = var.sandbox_nodes_mem
     vcpu      = var.sandbox_nodes_vcpu
     running   = var.status
+
+    cpu {
+        mode = "host-passthrough"
+    }
 
     cloudinit = libvirt_cloudinit_disk.sandbox_nodes_init[count.index].id
 
@@ -66,9 +71,9 @@ resource "libvirt_domain" "sandbox_nodes_domain" {
         type = "qxl"
     }
 
-    xml {
-        xslt = file("./add_spicevmc.xsl")
-    }
+    # xml {
+        # xslt = file("./add_spicevmc.xsl")
+    # }
 
 }
 

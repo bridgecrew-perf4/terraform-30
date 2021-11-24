@@ -15,19 +15,22 @@ users:
     groups: sudo
     shell: /bin/bash
 
-package_update: true
-package_upgrade: true
-package_reboot_if_required: true
+# package_update: true
+# package_upgrade: true
+# package_reboot_if_required: true
 
 write_files:
 - content: |
-    opster_sgw_logger_url:
-      protocol: "http"
-      host: "{{ docker_network_gw }}"
-      port: 9201
+    es_version: '7.15.1'
+    deploy_using: 'docker'
+
     opster_sgw_backends:
-      - url: 'http://es-1-onion.giacchetta.net:9200'
+      - url: 'http://172.16.239.2:9200'
         default: 'true'
+      - url: 'http://172.16.239.3:9200'
+        default: 'false'
+      - url: 'http://172.16.239.4:9200'
+        default: 'false'                
 
   path: /etc/ansible/values.yaml
   permissions: '0644'  
@@ -39,4 +42,16 @@ packages:
 
 runcmd:
   - [ pip3, install, ansible-core==2.11.*]
-  - [ ansible-pull, -e @/etc/ansible/values.yaml, -U https://github.com/giacchetta/ansible.git, sgw-pull/stack.yaml]
+
+--//
+Content-Type: text/x-shellscript; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="script.sh"
+
+#!/bin/bash
+
+ansible-pull -U https://github.com/giacchetta/ansible.git sgw-pull-1/local.yaml
+ansible-pull -e @/etc/ansible/values.yaml -U https://github.com/giacchetta/ansible.git sgw-pull-1/installer.yaml
+
+--//
