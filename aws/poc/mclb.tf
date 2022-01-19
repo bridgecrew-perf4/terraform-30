@@ -4,7 +4,7 @@ locals {
 
 }
 
-resource "aws_instance" "web" {
+resource "aws_instance" "mclb" {
   count = 3
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.medium"
@@ -24,5 +24,5 @@ resource "aws_instance" "web" {
 
 
 output "aws_instance_mclb" {
-    value   = aws_instance.web[*].public_ip
+    value   = aws_instance.mclb[*].public_ip
 }
