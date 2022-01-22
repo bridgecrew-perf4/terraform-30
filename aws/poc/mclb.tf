@@ -5,7 +5,7 @@ locals {
 }
 
 resource "aws_instance" "mclb" {
-  count = 3
+  count = 2
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3.medium"
   associate_public_ip_address = true

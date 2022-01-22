@@ -31,6 +31,10 @@ data "aws_vpc" "default" {
   default = true
 } 
 
+data "external" "get_ip" {
+  program = ["/bin/bash" , "${path.module}/get_ip.sh"]
+}
+
 resource "aws_security_group" "allow_all_local" {
   name        = "allow_all_local"
   description = "Allow all local traffic"
@@ -48,7 +52,23 @@ resource "aws_security_group" "allow_all_local" {
     from_port        = 22
     to_port          = 22
     protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
+    cidr_blocks      = [format("%s/%s",data.external.get_ip.result["internet_ip"],32)]
+  }
+  
+ingress {
+    description      = "ELASTIC"
+    from_port        = 9200
+    to_port          = 9202
+    protocol         = "tcp"
+    cidr_blocks      = [format("%s/%s",data.external.get_ip.result["internet_ip"],32)]
+  }
+
+ingress {
+    description      = "GRAFANA"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = [format("%s/%s",data.external.get_ip.result["internet_ip"],32)]
   }
 
   egress {
