@@ -71,6 +71,14 @@ ingress {
     cidr_blocks      = [format("%s/%s",data.external.get_ip.result["internet_ip"],32)]
   }
 
+ingress {
+    description      = "PROMETHEUS"
+    from_port        = 9090
+    to_port          = 9090
+    protocol         = "tcp"
+    cidr_blocks      = [format("%s/%s",data.external.get_ip.result["internet_ip"],32)]
+  }
+
   egress {
     from_port        = 0
     to_port          = 0
