@@ -55,10 +55,26 @@ resource "aws_security_group" "allow_all_local" {
     cidr_blocks      = [format("%s/%s",data.external.get_ip.result["internet_ip"],32)]
   }
   
+  ingress {
+    description      = "SSH"
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    cidr_blocks      = ["77.137.68.250/32"]
+  }
+  
 ingress {
     description      = "ELASTIC"
     from_port        = 9200
     to_port          = 9202
+    protocol         = "tcp"
+    cidr_blocks      = [format("%s/%s",data.external.get_ip.result["internet_ip"],32)]
+  }
+
+ingress {
+    description      = "MCLB"
+    from_port        = 8200
+    to_port          = 8200
     protocol         = "tcp"
     cidr_blocks      = [format("%s/%s",data.external.get_ip.result["internet_ip"],32)]
   }
